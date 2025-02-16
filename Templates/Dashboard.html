@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/CSS/Dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+   
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="../static/Images/Exafluence.jpg" alt="logo" />
+            <span style="color: white; padding-left: 25px; font-weight: bold;">Exafluence</span>
+        </div>
+        <ul class="sidebar-links">
+            <h4>
+                <span>Main Menu</span>
+                <div class="menu-separator"></div>
+            </h4>
+            <li>
+                <a href="/dashboard">
+                    <span class="icon"><i class="fas fa-tachometer-alt"></i></span>
+                    <span class="text"> Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/account">
+                    <span class="icon"><i class="fas fa-user"></i></span>
+                    <span class="text"> My Account</span>
+                </a>
+            </li>
+            <li>
+                <a href="/myshipment">
+                    <span class="icon"><i class="fas fa-box"></i></span>
+                    <span class="text"> My Shipment</span>
+                </a>
+            </li>
+            <li>
+                <a href="/newshipment">
+                    <span class="icon"><i class="fas fa-plus"></i></span>
+                    <span class="text"> New Shipment</span>
+                </a>
+            </li>
+            <li>
+                <a href="/devicedata" id="device-data-link">
+                    <span class="icon"><i class="fas fa-cog"></i></span>
+                    <span class="text"> Device Data</span>
+                </a>
+            </li>
+            <li>
+                <a href="/users">
+                    <span class="icon"><i class="fas fa-users"></i></span>
+                    <span class="text">Users</span>
+                </a>
+            </li>
+            <li>
+                <a href="/login" class="logout" onclick="logout(event)">
+                    <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span class="text">Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="content1">
+        <h2 id="welcome-message" style="background-color: #242841; width: 100%; padding: 10px; text-align: center;"></h2>
+    </div>
+
+    <div class="content">
+        <div class="button-container">
+            <button class="action-button" id="device-data-stream-btn">Device Data Stream</button>
+            <button class="action-button" id="shipment-data-btn">Shipment Data</button>
+        </div>
+    </div>
+
+    <script src="../static/Javascript/Dashboard.js"></script>
+
+    <script>
+
+        const token = localStorage.getItem("access_token");
+    
+       
+        function decodeToken(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {  //atob is used to convert base64 into string
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); 
+            }).join(''));
+    
+            return JSON.parse(jsonPayload); 
+        }
+    
+        
+        const user = decodeToken(token);
+        const userName = user.username || "User"; 
+    
+        
+        document.getElementById('welcome-message').innerText = `Hey ${userName}, welcome to SCMXpertLite — where amazing things happen! 🚀`;
+    
+        
+        function getAuthHeaders() {
+            return {
+                'Authorization': `Bearer ${token}`,  
+                'Content-Type': 'application/json'   
+            };
+        }
+    
+        
+        document.getElementById("device-data-stream-btn").addEventListener('click', () => {
+            window.location.href = "/devicedata"; 
+        });
+    
+      
+        document.getElementById("shipment-data-btn").addEventListener('click', () => {
+            window.location.href = "/myshipment"; 
+        });
+    
+        
+        function logout(event) {
+            event.preventDefault();  
+    
+            
+            localStorage.removeItem("access_token");
+    
+
+            fetch("/logout", {
+                method: "POST",  
+                credentials: "same-origin",  // Ensures cookies and credentials are included same origin 
+                headers: {
+                    "Content-Type": "application/json"  
+                }
+            })
+            .then(response => {
+                
+                if (response.ok) {
+                    
+                    window.location.href = "/login";
+                } else {
+                    throw new Error("Logout failed");
+                }
+            })
+            .catch(error => {
+                console.error("Logout error:", error);
+                
+            });
+        }
+    </script>
+    
+    
+
+</body>
+</html>
